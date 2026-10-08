@@ -1,0 +1,4 @@
+# Keep LF in the repository regardless of the OS of the working copy.
+* text=auto eol=lf
+*.png binary
+*.parquet binary
