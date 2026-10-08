@@ -1,6 +1,6 @@
 # mdp: a market data platform for quantitative research
 
-[![ci](https://github.com/USER/quant-data-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/USER/quant-data-platform/actions)
+[![ci](https://github.com/husseinsayedah/quant-data-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/husseinsayedah/quant-data-platform/actions)
 ![python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 
