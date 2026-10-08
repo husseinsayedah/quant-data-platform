@@ -1,0 +1,62 @@
+{
+  "title": "mdp - market data platform",
+  "uid": "mdp-main",
+  "schemaVersion": 39,
+  "refresh": "5s",
+  "time": { "from": "now-30m", "to": "now" },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "Websocket connected",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "targets": [{ "expr": "mdp_ws_connected", "refId": "A" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] } } }
+    },
+    {
+      "id": 2, "type": "stat", "title": "Reconnects (30m)",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "targets": [{ "expr": "increase(mdp_ws_reconnects_total[30m])", "refId": "A" }]
+    },
+    {
+      "id": 3, "type": "stat", "title": "Missing trade ids (30m)",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "targets": [{ "expr": "sum(increase(mdp_trade_gaps_total[30m]))", "refId": "A" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] } } }
+    },
+    {
+      "id": 4, "type": "stat", "title": "Queue depth",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "targets": [{ "expr": "mdp_queue_depth", "refId": "A" }]
+    },
+    {
+      "id": 5, "type": "stat", "title": "Rows written (total)",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 4 },
+      "targets": [{ "expr": "sum by (stream) (mdp_rows_written_total)", "legendFormat": "{{stream}}", "refId": "A" }]
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "Messages / s by stream",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "targets": [{ "expr": "sum by (stream, symbol) (rate(mdp_messages_total[30s]))", "legendFormat": "{{symbol}} {{stream}}", "refId": "A" }]
+    },
+    {
+      "id": 7, "type": "timeseries", "title": "Exchange -> local latency (p50 / p99)",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "targets": [
+        { "expr": "histogram_quantile(0.5, sum by (le, symbol) (rate(mdp_ingest_latency_seconds_bucket[1m])))", "legendFormat": "p50 {{symbol}}", "refId": "A" },
+        { "expr": "histogram_quantile(0.99, sum by (le, symbol) (rate(mdp_ingest_latency_seconds_bucket[1m])))", "legendFormat": "p99 {{symbol}}", "refId": "B" }
+      ]
+    },
+    {
+      "id": 8, "type": "timeseries", "title": "Parquet flush duration (p99)",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "targets": [{ "expr": "histogram_quantile(0.99, sum by (le) (rate(mdp_writer_flush_seconds_bucket[5m])))", "refId": "A" }]
+    },
+    {
+      "id": 9, "type": "timeseries", "title": "API latency p50 by endpoint",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "targets": [{ "expr": "histogram_quantile(0.5, sum by (le, endpoint) (rate(mdp_api_latency_seconds_bucket[5m])))", "legendFormat": "{{endpoint}}", "refId": "A" }]
+    }
+  ]
+}

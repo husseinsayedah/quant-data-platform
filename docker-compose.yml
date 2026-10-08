@@ -1,0 +1,41 @@
+services:
+  ingest:
+    build: .
+    command: ["mdp", "ingest", "--symbols", "${MDP_SYMBOLS:-btcusdt,ethusdt}", "--metrics-port", "9100"]
+    volumes: ["lake:/data"]
+    ports: ["9100:9100"]
+    restart: unless-stopped
+
+  batch:
+    build: .
+    # Every 60s: rebuild bars for today and refresh the quality report.
+    command: ["sh", "-c", "while true; do mdp bars --interval 1m; mdp quality; sleep 60; done"]
+    volumes: ["lake:/data"]
+    restart: unless-stopped
+    depends_on: [ingest]
+
+  api:
+    build: .
+    command: ["mdp", "serve", "--host", "0.0.0.0", "--port", "8000"]
+    volumes: ["lake:/data:ro"]
+    ports: ["8000:8000"]
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    volumes: ["./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"]
+    ports: ["9090:9090"]
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+    volumes:
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["3000:3000"]
+    depends_on: [prometheus]
+
+volumes:
+  lake:
